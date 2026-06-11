@@ -18,8 +18,9 @@
 #include "PluginEditor.h"
 #include "BinaryData.h"
 
-const uint32_t s4aMidiInputAddr = 0x3007000;
-const uint32_t s4aMidiInputSize = 0x900;
+const uint32_t s4aMidiInputAddr = 0x3007002;
+const uint32_t s4aMidiInputSizeAddr = 0x3007000;
+const uint32_t s4aMidiInputSize = 0x200;
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -253,6 +254,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
       core->rawWrite8(core, midiptr++, 0, 0xFF);
       core->rawWrite8(core, midiptr++, 0, 0x2F);
       core->rawWrite8(core, midiptr++, 0, 0);
+      size_t midiSize = midiptr - s4aMidiInputAddr;
+      core->rawWrite16(core, s4aMidiInputSizeAddr, 0, midiSize);
       core->runFrame(core);
       midiptr = s4aMidiInputAddr;
       mAudioResamplerProcess(&maResampler);

@@ -20,6 +20,10 @@
 #include "demobank.h"
 #include "kitty.h"
 
+#define MAX_MIDI_BUFSIZE 512
+vu16* midiCopyBufferSize = (vu16*)0x3007000;
+u8* midiCopyBuffer = (u8*)0x3007002;
+
 KittyState kitty;
 
 int main() {
@@ -27,7 +31,18 @@ int main() {
   irq_add(II_VBLANK, NULL);
 
   DemoBankInit();
-  KittyInit(&kitty, &sndbank, &drumbank, 32, 11, 4, 10, 1);
+
+  KittyConfig kcfg = {
+    .voices = 32,
+    .masterVolume = 11,
+    .freqMode = KT_FREQ_MODE_13379HZ,
+    .reverb = 10,
+    .bank0 = &sndbank,
+    .bank127 = &drumbank
+};  
+  
+  KittyInit(&kitty, kcfg);
+  KittyLiveMidiInit(&kitty, KT_LIVEMIDI_MODE_FIXED_BUFFER, midiCopyBuffer, midiCopyBufferSize);
   KittySetVSync(&kitty, 1);
 
   while(1) {
